@@ -89,7 +89,23 @@ class KNearestNeighbors(object):
         label = None
 
         ## insert your code here ##
-        distances = np.array([norm(difference(query, instance), difference(query, instance)) for instance in self.X_train])
+        # This method uses for loop : 
+        #distances = np.array([norm(difference(query, instance), difference(query, instance)) for instance in self.X_train])
+        # While it works just fine, performances are sloooooow
+        # For reference : when calculating the decision surface with this method ^, it takes about 40-60 seconds.
+        
+        # Without loop method : 
+        # With this method v, it's barely 5 seconds. 
+        distances = np.sqrt(np.sum(np.square(self.X_train-query), axis=1))
+        # How to calculate the distance without a for loop : 
+        # matrice n,2 - vector 1,2 = doesn't work. WE need to make the shape of the vector - matrix the same. How ? 
+        # We are going to stack the vector on itself, repeating the same vector n time. 
+        # We don't need to actually stack the vector literally. Broadcasting in python/numpy let us write matrix-vector just fine
+            # Broadcasting : we repeat the X_train-query operation at each row of the matrix
+        # A mathematician would kill if you did that tho. The shape of the matrix and vector do not match, so we can't do it normally
+        # To broadcast in this context, we do need to have at least one of the shape number correct
+        # If it was matrix 4,5 and vector 1,2, it wouldn't work
+        
         
         # This is the distance between the query and each point in the train dataset
         distances = np.reshape(distances, (distances.shape[0], 1)) 

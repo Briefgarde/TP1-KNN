@@ -3,7 +3,7 @@
 In this TP, we will implement the KNN algorithm. KNN is a simple, lazy learning algorithm which uses the distance between the new, queried point and each points in the training dataset to make a prediction. 
 
 ## Steps
-1. "Training" : The model memorize the entire dataset. 
+1. "Training" : The model memorize the entire dataset, including the target. 
 2. "Prediction" : The model receive a new point (a query) and make a prediction.
    1. We calculate the distance between the query and every other points in the training dataset. This is done using the norm of the difference between the query and the points. We obtain a list of the points ranked by order of "closeness" to the query.
    2.  We take the **k** closest point in the training data set. **K** is an hyperparameter given when making a query. 
@@ -135,6 +135,47 @@ In those diagram, we observe how the model would predict various query using two
 When k is low (1, 3 to some extent), the edges of the surfaces are very jagged : the model is very sensitive to outliers. 
 When k is medium (3-5), the edges get smoother. The noise is slightly reduced and the model is likely to be at its peak there. 
 When is k (15), the edges are extremely smooth, to the point that the model is generalizing too much. In the case where the classes of the classification problem are far apart, this works fine (but it also likely wouldn't have needed a (KNN) model to be solved in the first place anyway), but if the classes are closer together, the model is underfitting by losing information information and become less accurate. 
+
+## Using broadcasting for a better performance
+Note : For this exemple, the vector and matrix are random, easy to understand number. 
+
+In the predict_label method of k_nearest_neighbor.py, I first used a for loop to calcualte the distance for each point in the dataset from the query. It works, but it's not efficient or pretty. 
+
+Instead, it is possible to use broadcasting to make the process significantly more optimized. Here, I discuss why it's better to do so, how it works, and what it does in this context. 
+
+Here, we want to obtain the **distances** between the query and every point in the dataset. First, we want to substract the values of the vector (shape 1,d) from every points in the matrix(shape n,d) that is the dataset to obtain the **difference vector**, but that would mean substracting a vector from a matrix : No go ! A mathematician will have a heart attack. We need to make the vector have the same shape as the matrix to do anything approaching what we want. So, visually, we transform the vector to replicate the same shape like this : 
+$$
+q = \begin{bmatrix}
+2 & 3 & 4
+\end{bmatrix} \Rightarrow \text{Broadcasted } q = \begin{bmatrix}
+2 & 3 & 4 \\
+2 & 3 & 4 \\
+2 & 3 & 4
+\end{bmatrix}$$
+
+With our broadcasted vector that now has the same shape as the matrix of the training set, we can correctly proceed with taking the difference matrix : 
+$$
+\text{Difference} = X_{\text{train}} - \text{broadcasted}q = \begin{bmatrix}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{bmatrix}
+- \begin{bmatrix}
+2 & 3 & 4 \\
+2 & 3 & 4 \\
+2 & 3 & 4
+\end{bmatrix}$$
+Doing this kind of difference is easy, we just substract the element based on their position. We will obtain the **difference matrix**, which contains the difference between the points and the query. The difference matrix contains the same info as a series of difference vector, which is what we would have obtained if we did a for loop. We then proceed with the standard process for this : 
+- we square each elements of the matrix(n,d), 
+  - At a row level, this is similar to doing the dot product of the row (which is equivalent to a difference vector) with itself. 
+- sum the matrix per row (we obtain a vector of shape n,1), 
+- and then take the root of the sum to finally obtain the distance (still the same (n,1) vector). 
+  - This vector has, for each of its row i, the distance between point i and the query. 
+
+Numpy allows us to do this easily. When we do matrix - vector in numpy, it automatically broadcast the vector and the equation demanded across all part of the matrix, so we don't need to *actually, literally,* stack the vector on itself to create a matrix that match the shape. This is why doing `self.X_train-query` works, even though the shapes don't match. 
+
+After that, `np.square(matrix)` lets us square every elements of the matrix without changing its position, `np.sum(matrix, axis=1)` sums the elements along the row of the matrix, returning a vector (n,1), and `np.sqrt()` take the square root of every elements. 
+
 
 ## Lazy learning algorithm
 

@@ -1,4 +1,4 @@
-# TP 1 : KNN from scratch
+# TP 1.1 : KNN from scratch
 
 In this TP, we will implement the KNN algorithm. KNN is a simple, lazy learning algorithm which uses the distance between the new, queried point and each points in the training dataset to make a prediction. 
 

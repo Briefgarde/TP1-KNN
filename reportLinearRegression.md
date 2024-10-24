@@ -102,9 +102,48 @@ The interecept could be decent if we squint our eyes and the slop was different,
 
 Because of this, the currect c and intercept values are not at all a good fit. 
 
-### Step 1.6 : testing initial and new parameters
-The MSE is a value that we're trying to minimize. A lower value for the MSE means that we're improving the performances of the model. Here, the initial parameter had the slope going down since it was negative, where as the datapoints seemed to show a mostly positive arrangement. Add
+### Step 1.6 : testing initial and new manual parameters
+Based on the error values, which set of parameters provides a better fit? Explain your findings in your report.
+- Initial slope : -3
+- Initial intercept : -2
+- Adjusted slope : 1.15
+- Adjusted intercept : 1
+
+- Initial MSE score : 671.7877208261439
+- adjusted MSE score : 0.5340351779878731
+
+The MSE is a value that we're trying to minimize. A lower value for the MSE means that we're improving the performances of the model. Here, the initial parameter had the slope going down since it was negative, where as the datapoints seem to show a mostly positive arrangement. Thus, moving the coef into the positive is better to follow along the data. 
+
+The intercept can also be moved up into the positive. Visually, it's harder, in my opinion, to guess where it should, but putting it into the positive looks a lot better, closer to the data. 
+
+If we're trying to look only at the MSE score to evaluate the set of parameters, then there isn't much doubt. The adjusted parameters drastsically lower the MSE score, making them a better set of parameters since the distance between the predicted and real value (what the MSE measure) is much lower. 
 
 
 ### Step 2.4 : Reflection and Discussion on the drawbacks of the naive approach
 The naive approach we use here is severely limited compared to more advanced approach, such as the gradient descent. 
+
+The first one is that we use an adjustement value that remain constant throughout the process. This adjustement control how much we move each iterations, no matter how close or far we are from finding a good fit from the value. When we're far from the correct values, this isn't a big problem, but we would want it to become smaller when we get closer, letting us take smaller step in the good direction. The process of arriving at the good values is called the convergence, where we converge on the values we want. Here, once we're close to the good value, we're very likely to overshoot it because our adjustement doesn't have the flexibility to vary and become smaller when we're close. 
+
+Since we "manually reverse" the direction of our adjustement when we overshoot, this can cause the algo to oscillate in place. In case where our adjustement rate is too big, we'll just constantly go back and forth around the optimal value, never really finding it. 
+
+Updating the coefs and the intercept separately is less than optimal. When we finish a cycle of update for one, the values for the others are no longer optimal anymore, slowing down the process of convergence or even causing the convergence to overshoot the optimal values. 
+
+Setup as it is, this algo can also only handle dataset with only one dimension, which is obviously severly limiting. 
+
+After I thought of those problems, I gave my algo to chatGPT and it listed those problem : 
+Note : The sub-bullet points are my thoughts. 
+1. Fixed learning rate and simplistic direction adjustment.
+   1. We adjust the direction based simply on the value of the last error. In a situation where we're stuck in a plateau, this algorithm has no tool to escape it at all. 
+2. Inefficient and non-standard update method (alternating coefficients and intercept).
+3. Arbitrary stopping and switching criteria.
+   1. This is true. Here, we decided to switch direction after 10 iteration with no improvement, and I added a stop after 20 iterations with no improvement. Those numbers are random, they comes from nowere. 
+4. Lack of standard gradient-based optimization (like gradient descent).
+   1. Gradient descent allows for a much more efficient process of finding the optimal values, combined with a good learning rate parameter. Gradient descents uses the derivatives of the cost function (MSE) to better seek the direction of the optimal coef and intercept values. (I do not yet fully understand the gradient descent lmao I'm just talking)
+5. Potentially slow convergence and risk of oscillation.
+6. Limited scalability to multivariate linear regression.
+   1. To adapt to multiple features, this algo would need to track a direction (and a coef, of course) for each of its features, among other things. This is possible, but it would require a lot of work. 
+7. No regularization to prevent overfitting.
+   1. Given the scope of the use case (single feature dataset), I don't think overfitting is quite on our mind yet. 
+8. Inefficient use of matrix operations.
+9.  Visualization might be too slow for larger datasets.
+   1.  This one is irrevelant, the visualizuation is obviously a tool for learning. 
